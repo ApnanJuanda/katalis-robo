@@ -31,7 +31,7 @@ func (repository CustomerRepositoryImpl) FindByEmail(email string) *model.Custom
 
 func (repository CustomerRepositoryImpl) FindAll() []*model.Customer {
 	var customers []*model.Customer
-	err := repository.DB.Find(&customers).Error
+	err := repository.DB.Order("updated_at desc, email").Find(&customers).Error
 	helper.PanicIfError(err)
 
 	return customers
@@ -43,6 +43,6 @@ func (repository CustomerRepositoryImpl) Update(customer *model.Customer) {
 }
 
 func (repository CustomerRepositoryImpl) Delete(email string) {
-	err := repository.DB.Where("email = ?", email).Delete(&model.Customer{}).Error
-	helper.PanicIfError(err)
+	tx := repository.DB.Where("email = ?", email).Delete(&model.Customer{})
+	helper.PanicIfError(tx.Error)
 }

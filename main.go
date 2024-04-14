@@ -2,15 +2,14 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
-	"github.com/julienschmidt/httprouter"
 	"katalisRobo/component-store/app"
 	"katalisRobo/component-store/controller"
 	"katalisRobo/component-store/helper"
 	"katalisRobo/component-store/repository"
 	"katalisRobo/component-store/service"
-	"net/http"
 	"os"
 )
 
@@ -18,6 +17,9 @@ func main() {
 	// make sure success load env
 	err := godotenv.Load("config/.env")
 	helper.PanicIfError(err)
+
+	// router using gin
+	router := gin.Default()
 
 	db := app.NewDB()
 	validate := validator.New()
@@ -30,7 +32,8 @@ func main() {
 	merchantService := service.NewMerchantService(merchantRepository, validate)
 	merchantController := controller.NewMerchantController(merchantService)
 
-	router := httprouter.New()
+	userService := service.NewUserService(customerRepository, merchantRepository)
+	userController := controller.NewUserController(userService)
 
 	// Customer
 	router.POST("/api/customers", customerController.Create)
@@ -46,11 +49,9 @@ func main() {
 	router.PUT("/api/merchants/:email", merchantController.Update)
 	router.DELETE("/api/merchants/:email", merchantController.Delete)
 
+	// User
+	router.POST("/api/login", userController.Login)
+
 	fmt.Println("My Application is running")
-	server := http.Server{
-		Addr:    ":" + os.Getenv("PORT"),
-		Handler: router,
-	}
-	err = server.ListenAndServe()
-	helper.PanicIfError(err)
+	router.Run(":" + os.Getenv("PORT"))
 }

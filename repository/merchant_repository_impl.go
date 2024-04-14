@@ -31,7 +31,7 @@ func (repository MerchantRepositoryImpl) FindByEmail(email string) *model.Mercha
 
 func (repository MerchantRepositoryImpl) FindAll() []*model.Merchant {
 	var merchants []*model.Merchant
-	err := repository.DB.Find(&merchants).Error
+	err := repository.DB.Order("updated_at desc, email").Find(&merchants).Error
 	helper.PanicIfError(err)
 
 	return merchants
@@ -43,6 +43,6 @@ func (repository MerchantRepositoryImpl) Update(merchant *model.Merchant) {
 }
 
 func (repository MerchantRepositoryImpl) Delete(email string) {
-	err := repository.DB.Where("email = ?", email).Delete(model.Merchant{}).Error
-	helper.PanicIfError(err)
+	tx := repository.DB.Where("email = ?", email).Delete(model.Merchant{})
+	helper.PanicIfError(tx.Error)
 }

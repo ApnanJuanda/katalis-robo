@@ -1,10 +1,8 @@
 package controller
 
 import (
-	"github.com/julienschmidt/httprouter"
+	"github.com/gin-gonic/gin"
 	"katalisRobo/component-store/data/request"
-	"katalisRobo/component-store/data/response"
-	"katalisRobo/component-store/helper"
 	"katalisRobo/component-store/service"
 	"net/http"
 )
@@ -19,67 +17,60 @@ func NewCustomerController(customerService service.CustomerService) *CustomerCon
 	}
 }
 
-func (controller CustomerController) Create(writer http.ResponseWriter, httpRequest *http.Request, params httprouter.Params) {
-	// read request
+func (controller CustomerController) Create(ctx *gin.Context) {
 	customerRequest := request.CustomerCreateRequest{}
-	helper.ReadFromRequestBody(httpRequest, &customerRequest)
-
-	// write response
+	if err := ctx.ShouldBindJSON(&customerRequest); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
 	controller.CustomerService.Create(&customerRequest)
-	webResponse := response.WebResponse{
-		Code:   200,
-		Status: "OK",
-		Data:   "Selamat!, akun Anda berhasil didaftarkan",
-	}
-	helper.WriteToResponseBody(writer, webResponse)
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": "Selamat!, akun Anda berhasil didaftarkan",
+	})
 }
 
-func (controller CustomerController) FindAll(writer http.ResponseWriter, httpRequest *http.Request, params httprouter.Params) {
+func (controller CustomerController) FindAll(ctx *gin.Context) {
 	customerResponses := controller.CustomerService.FindAll()
-	webResponse := response.WebResponse{
-		Code:   200,
-		Status: "OK",
-		Data:   customerResponses,
-	}
-	helper.WriteToResponseBody(writer, webResponse)
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": customerResponses,
+	})
 }
 
-func (controller CustomerController) FindByEmail(writer http.ResponseWriter, httpRequest *http.Request, params httprouter.Params) {
-	email := params.ByName("email")
+func (controller CustomerController) FindByEmail(ctx *gin.Context) {
+	email := ctx.Param("email")
 	customerResponse := controller.CustomerService.FindByEmail(email)
-	if nil != customerResponse {
-		webResponse := response.WebResponse{
-			Code:   200,
-			Status: "OK",
-			Data:   customerResponse,
-		}
-		helper.WriteToResponseBody(writer, webResponse)
+	if nil == customerResponse {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"data": "Mohon maaf, customer tidak ditemukan",
+		})
+		return
 	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": customerResponse,
+	})
 }
 
-func (controller CustomerController) Update(writer http.ResponseWriter, httpRequest *http.Request, params httprouter.Params) {
+func (controller CustomerController) Update(ctx *gin.Context) {
 	customerUpdateRequest := request.CustomerUpdateRequest{}
-	helper.ReadFromRequestBody(httpRequest, &customerUpdateRequest)
-
-	email := params.ByName("email")
-	customerUpdateResponse := controller.CustomerService.Update(email, &customerUpdateRequest)
-	if nil != customerUpdateResponse {
-		webResponse := response.WebResponse{
-			Code:   200,
-			Status: "OK",
-			Data:   customerUpdateResponse,
-		}
-		helper.WriteToResponseBody(writer, webResponse)
+	if err := ctx.ShouldBindJSON(&customerUpdateRequest); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
 	}
+	email := ctx.Param("email")
+	customerUpdateResponse := controller.CustomerService.Update(email, &customerUpdateRequest)
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": customerUpdateResponse,
+	})
 }
 
-func (controller CustomerController) Delete(writer http.ResponseWriter, httpRequest *http.Request, params httprouter.Params) {
-	email := params.ByName("email")
+func (controller CustomerController) Delete(ctx *gin.Context) {
+	email := ctx.Param("email")
 	controller.CustomerService.Delete(email)
-	webResponse := response.WebResponse{
-		Code:   200,
-		Status: "OK",
-		Data:   "Akun Anda berhasil dihapus",
-	}
-	helper.WriteToResponseBody(writer, webResponse)
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": "Akun Anda berhasil dihapus",
+	})
 }

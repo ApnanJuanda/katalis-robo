@@ -1,10 +1,8 @@
 package controller
 
 import (
-	"github.com/julienschmidt/httprouter"
+	"github.com/gin-gonic/gin"
 	"katalisRobo/component-store/data/request"
-	"katalisRobo/component-store/data/response"
-	"katalisRobo/component-store/helper"
 	"katalisRobo/component-store/service"
 	"net/http"
 )
@@ -19,65 +17,60 @@ func NewMerchantController(merchantService service.MerchantService) *MerchantCon
 	}
 }
 
-func (controller MerchantController) Create(writer http.ResponseWriter, httpRequest *http.Request, params httprouter.Params) {
+func (controller MerchantController) Create(ctx *gin.Context) {
 	merchantCreateRequest := request.MerchantCreateRequest{}
-	helper.ReadFromRequestBody(httpRequest, &merchantCreateRequest)
-
+	if err := ctx.ShouldBindJSON(&merchantCreateRequest); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
 	controller.MerchantService.Save(&merchantCreateRequest)
-	webResponse := response.WebResponse{
-		Code:   200,
-		Status: "OK",
-		Data:   "Selamat!, akun supplier Anda berhasil didaftarkan",
-	}
-	helper.WriteToResponseBody(writer, webResponse)
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": "Selamat!, akun merchant Anda berhasil didaftarkan",
+	})
 }
 
-func (controller MerchantController) FindAll(writer http.ResponseWriter, httpRequest *http.Request, params httprouter.Params) {
+func (controller MerchantController) FindAll(ctx *gin.Context) {
 	merchantResponses := controller.MerchantService.FindAll()
-	webResponse := response.WebResponse{
-		Code:   200,
-		Status: "OK",
-		Data:   merchantResponses,
-	}
-	helper.WriteToResponseBody(writer, webResponse)
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": merchantResponses,
+	})
 }
 
-func (controller MerchantController) FindByEmail(writer http.ResponseWriter, httpRequest *http.Request, params httprouter.Params) {
-	email := params.ByName("email")
+func (controller MerchantController) FindByEmail(ctx *gin.Context) {
+	email := ctx.Param("email")
 	merchantResponse := controller.MerchantService.FindByEmail(email)
-	if nil != merchantResponse {
-		webResponse := response.WebResponse{
-			Code:   200,
-			Status: "OK",
-			Data:   merchantResponse,
-		}
-		helper.WriteToResponseBody(writer, webResponse)
+	if nil == merchantResponse {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"data": "Mohon maaf, customer tidak ditemukan",
+		})
+		return
 	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": merchantResponse,
+	})
 }
 
-func (controller MerchantController) Update(writer http.ResponseWriter, httpRequest *http.Request, params httprouter.Params) {
+func (controller MerchantController) Update(ctx *gin.Context) {
 	merchantUpdateRequest := request.MerchantUpdateRequest{}
-	helper.ReadFromRequestBody(httpRequest, &merchantUpdateRequest)
-
-	email := params.ByName("email")
-	merchantUpdateResponse := controller.MerchantService.Update(email, &merchantUpdateRequest)
-	if nil != merchantUpdateResponse {
-		webResponse := response.WebResponse{
-			Code:   200,
-			Status: "OK",
-			Data:   merchantUpdateResponse,
-		}
-		helper.WriteToResponseBody(writer, webResponse)
+	if err := ctx.ShouldBindJSON(&merchantUpdateRequest); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
 	}
+	email := ctx.Param("email")
+	merchantUpdateResponse := controller.MerchantService.Update(email, &merchantUpdateRequest)
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": merchantUpdateResponse,
+	})
 }
 
-func (controller MerchantController) Delete(writer http.ResponseWriter, httpRequest *http.Request, params httprouter.Params) {
-	email := params.ByName("email")
+func (controller MerchantController) Delete(ctx *gin.Context) {
+	email := ctx.Param("email")
 	controller.MerchantService.Delete(email)
-	webResponse := response.WebResponse{
-		Code:   200,
-		Status: "OK",
-		Data:   "Akun Anda berhasil dihapus",
-	}
-	helper.WriteToResponseBody(writer, webResponse)
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": "Akun merchant Anda berhasil dihapus",
+	})
 }

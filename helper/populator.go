@@ -64,7 +64,7 @@ func GenerateCustomerId(maxDigits uint32, typeAccount string) string {
 }
 
 func MerchantPopulator(merchantCreateRequest *request.MerchantCreateRequest) (*model.Merchant, error) {
-	_, err := GetAESEncrypted(merchantCreateRequest.Password)
+	_, err := GetAESDecrypted(merchantCreateRequest.Password)
 	PanicIfError(err)
 
 	return &model.Merchant{
