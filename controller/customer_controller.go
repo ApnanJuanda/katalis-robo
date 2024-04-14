@@ -21,7 +21,7 @@ func (controller CustomerController) Create(ctx *gin.Context) {
 	customerRequest := request.CustomerCreateRequest{}
 	if err := ctx.ShouldBindJSON(&customerRequest); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
+			"data": err.Error(),
 		})
 		return
 	}
@@ -56,7 +56,7 @@ func (controller CustomerController) Update(ctx *gin.Context) {
 	customerUpdateRequest := request.CustomerUpdateRequest{}
 	if err := ctx.ShouldBindJSON(&customerUpdateRequest); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
+			"data": err.Error(),
 		})
 		return
 	}

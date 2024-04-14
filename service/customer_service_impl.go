@@ -56,10 +56,9 @@ func (service CustomerServiceImpl) Update(email string, customerUpdateRequest *r
 	err := service.Validate.Struct(customerUpdateRequest)
 	helper.PanicIfError(err)
 
-	// find by email
 	var customerUpdatedModel *model.Customer
 	customerModel := service.CustomerRepository.FindByEmail(email)
-	if nil != customerModel {
+	if customerModel != nil {
 		customerUpdatedModel, err = helper.CustomerUpdatePopulator(customerModel, customerUpdateRequest)
 		helper.PanicIfError(err)
 		service.CustomerRepository.Update(customerUpdatedModel)

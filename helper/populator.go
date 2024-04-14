@@ -2,6 +2,7 @@ package helper
 
 import (
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"katalisRobo/component-store/data/request"
 	"katalisRobo/component-store/data/response"
@@ -18,7 +19,7 @@ func CustomerPopulator(customerRegister *request.CustomerCreateRequest) (*model.
 	PanicIfError(err)
 
 	return &model.Customer{
-		ID:              GenerateCustomerId(4, "customer"),
+		ID:              GenerateId(4, "customer"),
 		Name:            customerRegister.Name,
 		Email:           customerRegister.Email,
 		Password:        customerRegister.Password,
@@ -48,7 +49,7 @@ func CustomerUpdatePopulator(customerModel *model.Customer, customerUpdateReques
 /*
 this method to generate customer id
 */
-func GenerateCustomerId(maxDigits uint32, typeAccount string) string {
+func GenerateId(maxDigits uint32, typeAccount string) string {
 	bi, err := rand.Int(
 		rand.Reader,
 		big.NewInt(int64(math.Pow(10, float64(maxDigits)))),
@@ -58,9 +59,14 @@ func GenerateCustomerId(maxDigits uint32, typeAccount string) string {
 	}
 	if typeAccount == "customer" {
 		return fmt.Sprintf("AC%0*d", maxDigits, bi)
-	} else {
+	} else if typeAccount == "merchant" {
 		return fmt.Sprintf("SPL%0*d", maxDigits, bi)
+	} else if typeAccount == "product" {
+		return fmt.Sprintf("P%0*d", maxDigits, bi)
+	} else if typeAccount == "group" {
+		return fmt.Sprintf("G%0*d", maxDigits, bi)
 	}
+	return ""
 }
 
 func MerchantPopulator(merchantCreateRequest *request.MerchantCreateRequest) (*model.Merchant, error) {
@@ -68,7 +74,7 @@ func MerchantPopulator(merchantCreateRequest *request.MerchantCreateRequest) (*m
 	PanicIfError(err)
 
 	return &model.Merchant{
-		ID:              GenerateCustomerId(4, "supplier"),
+		ID:              GenerateId(4, "merchant"),
 		Name:            merchantCreateRequest.Name,
 		Email:           merchantCreateRequest.Email,
 		Password:        merchantCreateRequest.Password,
@@ -92,4 +98,47 @@ func MerchantUpdatePopulator(merchantModel *model.Merchant, merchantUpdateReques
 	merchantModel.PhoneNumber = merchantUpdateRequest.PhoneNumber
 	merchantModel.AccountNumber = merchantModel.AccountNumber
 	return merchantModel, nil
+}
+
+func ProductPopulator(productCreateRequest *request.ProductCreateRequest, merchantId string) (*model.Product, error) {
+	return &model.Product{
+		ID:         GenerateId(4, "product"),
+		Name:       productCreateRequest.Name,
+		Price:      productCreateRequest.Price,
+		Stock:      productCreateRequest.Stock,
+		ImageUrl:   productCreateRequest.ImageUrl,
+		MerchantId: merchantId,
+	}, nil
+}
+
+func ProductResponsePopulator(productModel *model.Product) (*response.ProductResponse, error) {
+	merchantResponse, err := MerchantResponsePopulator(&productModel.Merchant)
+	if nil == err {
+		return &response.ProductResponse{
+			Name:     productModel.Name,
+			Merchant: merchantResponse,
+			Price:    productModel.Price,
+			Stock:    productModel.Stock,
+			ImageUrl: productModel.ImageUrl,
+		}, nil
+	} else {
+		return nil, errors.New("Terjadi kesalahan")
+	}
+}
+
+func ProductUpdatePopulator(productModel *model.Product, productUpdateRequest *request.ProductUpdateRequest) (*model.Product, error) {
+	productModel.Name = productUpdateRequest.Name
+	productModel.Price = productUpdateRequest.Price
+	productModel.Stock = productUpdateRequest.Stock
+	productModel.ImageUrl = productUpdateRequest.ImageUrl
+
+	return productModel, nil
+}
+
+func GroupPopulator(productId string, categoryId string) (*model.Group, error) {
+	return &model.Group{
+		ID:         GenerateId(4, "group"),
+		ProductId:  productId,
+		CategoryId: categoryId,
+	}, nil
 }

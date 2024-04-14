@@ -54,7 +54,6 @@ func (service MerchantServiceImpl) Update(email string, merchantUpdateRequest *r
 	err := service.Validate.Struct(merchantUpdateRequest)
 	helper.PanicIfError(err)
 
-	// find by email
 	var merchantUpdatedModel *model.Merchant
 	merchantModel := service.MerchantRepository.FindByEmail(email)
 	if nil != merchantModel {

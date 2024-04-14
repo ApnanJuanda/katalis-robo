@@ -24,8 +24,9 @@ func (repository CustomerRepositoryImpl) Save(customer *model.Customer) {
 func (repository CustomerRepositoryImpl) FindByEmail(email string) *model.Customer {
 	var customer model.Customer
 	err := repository.DB.First(&customer, "email = ?", email).Error
-	helper.PanicIfError(err)
-
+	if err != nil {
+		return nil
+	}
 	return &customer
 }
 

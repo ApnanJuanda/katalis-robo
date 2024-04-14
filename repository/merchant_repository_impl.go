@@ -24,8 +24,9 @@ func (repository MerchantRepositoryImpl) Save(merchant *model.Merchant) {
 func (repository MerchantRepositoryImpl) FindByEmail(email string) *model.Merchant {
 	var merchant model.Merchant
 	err := repository.DB.First(&merchant, "email = ?", email).Error
-	helper.PanicIfError(err)
-
+	if err != nil {
+		return nil
+	}
 	return &merchant
 }
 

@@ -1,6 +1,6 @@
 package current
 
-type CurrentUser struct {
+type AuthUser struct {
 	UserEmail string
 	Role      string
 }

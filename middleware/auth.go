@@ -15,28 +15,32 @@ func WithAuth() gin.HandlerFunc {
 		authHeader := ctx.GetHeader("Authorization")
 		if authHeader == "" {
 			unauthorizedResponse(ctx)
+			return
 		}
 
 		if !strings.HasPrefix(authHeader, "Bearer ") {
 			unauthorizedResponse(ctx)
+			return
 		}
 
 		auths := strings.Split(authHeader, " ")
 		if len(auths) != 2 {
 			unauthorizedResponse(ctx)
+			return
 		}
 
 		data, err := helper.DecryptJWT(auths[1])
 		if err != nil {
 			unauthorizedResponse(ctx)
+			return
 		}
 
-		currentUser := current.CurrentUser{
+		authUser := current.AuthUser{
 			UserEmail: fmt.Sprintf("%v", data["user_email"]),
 			Role:      fmt.Sprintf("%v", data["role"]),
 		}
 
-		ctxCustomerEmail := context.WithValue(ctx.Request.Context(), "customer", currentUser)
+		ctxCustomerEmail := context.WithValue(ctx.Request.Context(), "authUser", authUser)
 		ctx.Request = ctx.Request.WithContext(ctxCustomerEmail)
 		ctx.Next()
 	}

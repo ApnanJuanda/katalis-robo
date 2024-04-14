@@ -8,6 +8,7 @@ import (
 	"katalisRobo/component-store/app"
 	"katalisRobo/component-store/controller"
 	"katalisRobo/component-store/helper"
+	"katalisRobo/component-store/middleware"
 	"katalisRobo/component-store/repository"
 	"katalisRobo/component-store/service"
 	"os"
@@ -18,7 +19,6 @@ func main() {
 	err := godotenv.Load("config/.env")
 	helper.PanicIfError(err)
 
-	// router using gin
 	router := gin.Default()
 
 	db := app.NewDB()
@@ -34,6 +34,12 @@ func main() {
 
 	userService := service.NewUserService(customerRepository, merchantRepository)
 	userController := controller.NewUserController(userService)
+
+	productRepository := repository.NewProductRepository(db)
+	categoryRepository := repository.NewCategoryRepository(db)
+	groupRepository := repository.NewGroupRepository(db)
+	productService := service.NewProductService(productRepository, categoryRepository, merchantRepository, groupRepository, validate)
+	productController := controller.NewProductController(productService)
 
 	// Customer
 	router.POST("/api/customers", customerController.Create)
@@ -51,6 +57,13 @@ func main() {
 
 	// User
 	router.POST("/api/login", userController.Login)
+
+	// Product
+	router.POST("/api/products", middleware.WithAuth(), productController.Create)
+	router.GET("/api/products/:productId", productController.FindById)
+	router.GET("/api/products/merchant/:merchantId", productController.FindByMerchantId)
+	router.PUT("/api/products/:productId", middleware.WithAuth(), productController.Update)
+	router.DELETE("/api/products/:productId", middleware.WithAuth(), productController.Delete)
 
 	fmt.Println("My Application is running")
 	router.Run(":" + os.Getenv("PORT"))
