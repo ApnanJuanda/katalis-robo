@@ -45,7 +45,7 @@ func (service CustomerServiceImpl) FindAll() []*response.CustomerResponse {
 	var customerResponses []*response.CustomerResponse
 	for _, customerModel := range customerModels {
 		customerResponse, err := helper.CustomerResponsePopulator(customerModel)
-		if nil == err {
+		if err == nil {
 			customerResponses = append(customerResponses, customerResponse)
 		}
 	}

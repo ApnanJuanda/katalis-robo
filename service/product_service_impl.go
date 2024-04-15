@@ -36,11 +36,11 @@ func (service ProductServiceImpl) Create(productCreateRequest *request.ProductCr
 	var productResponse *response.ProductResponse
 	productResponse = nil
 
-	category := service.CategoryRepository.FindById(productCreateRequest.CategoryId)
+	category := service.CategoryRepository.FindByCategoryId(productCreateRequest.CategoryId)
 	merchant := service.MerchantRepository.FindByEmail(authUser.UserEmail)
 	if nil != category && nil != merchant {
 		productModel, err := helper.ProductPopulator(productCreateRequest, merchant.ID)
-		if nil == err {
+		if err == nil {
 			service.ProductRepository.Save(productModel)
 
 			groupModel, err := helper.GroupPopulator(productModel.ID, productCreateRequest.CategoryId)

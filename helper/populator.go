@@ -67,6 +67,8 @@ func GenerateId(maxDigits uint32, typeAccount string) string {
 		return fmt.Sprintf("G%0*d", maxDigits, bi)
 	} else if typeAccount == "address" {
 		return fmt.Sprintf("ADD%0*d", maxDigits, bi)
+	} else if typeAccount == "category" {
+		return fmt.Sprintf("C%0*d", maxDigits, bi)
 	}
 	return ""
 }
@@ -115,7 +117,7 @@ func ProductPopulator(productCreateRequest *request.ProductCreateRequest, mercha
 
 func ProductResponsePopulator(productModel *model.Product) (*response.ProductResponse, error) {
 	merchantResponse, err := MerchantResponsePopulator(&productModel.Merchant)
-	if nil == err {
+	if err == nil {
 		return &response.ProductResponse{
 			Name:     productModel.Name,
 			Merchant: merchantResponse,
@@ -155,7 +157,7 @@ func AddressPopulator(addressCreateRequest *request.AddressCreateUpdateRequest, 
 
 func AddressResponsePopulator(addressModel *model.Address) (*response.AddressResponse, error) {
 	customerResponse, err := CustomerResponsePopulator(&addressModel.Customer)
-	if nil == err {
+	if err == nil {
 		return &response.AddressResponse{
 			Customer: customerResponse,
 			Address:  addressModel.Detail,
@@ -168,4 +170,23 @@ func AddressResponsePopulator(addressModel *model.Address) (*response.AddressRes
 func AddressUpdatePopulator(addressModel *model.Address, addressUpdateRequest *request.AddressCreateUpdateRequest) (*model.Address, error) {
 	addressModel.Detail = addressUpdateRequest.Detail
 	return addressModel, nil
+}
+
+func CategoryPopulator(categoryRequest *request.CategoryCreateUpdateRequest) (*model.Category, error) {
+	return &model.Category{
+		ID:   GenerateId(4, "category"),
+		Name: categoryRequest.Name,
+	}, nil
+}
+
+func CategoryUpdatePopulator(categoryModel *model.Category, categoryUpdateRequest *request.CategoryCreateUpdateRequest) (*model.Category, error) {
+	categoryModel.Name = categoryUpdateRequest.Name
+	return categoryModel, nil
+}
+
+func CategoryCreateUpdateResponse(categoryModel *model.Category) (*response.CategoryCreateUpdateResponse, error) {
+	return &response.CategoryCreateUpdateResponse{
+		ID:   categoryModel.ID,
+		Name: categoryModel.Name,
+	}, nil
 }

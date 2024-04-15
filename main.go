@@ -45,6 +45,9 @@ func main() {
 	addressService := service.NewAddressService(addressRepository, customerRepository, validate)
 	addressController := controller.NewAddressController(addressService)
 
+	categoryService := service.NewCategoryService(categoryRepository, validate)
+	categoryController := controller.NewCategoryController(categoryService)
+
 	// Customer
 	router.POST("/api/customers", customerController.Create)
 	router.GET("/api/customers", customerController.FindAll)
@@ -75,6 +78,12 @@ func main() {
 	router.GET("/api/address", middleware.WithAuth(), addressController.FindByEmail)
 	router.PUT("/api/address/:addressId", middleware.WithAuth(), addressController.Update)
 	router.DELETE("/api/address/:addressId", middleware.WithAuth(), addressController.Delete)
+
+	// Category
+	router.POST("/api/categories", middleware.WithAuth(), categoryController.Create)
+	router.GET("/api/categories/:categoryId", categoryController.FindById)
+	router.PUT("/api/categories/:categoryId", middleware.WithAuth(), categoryController.Update)
+	router.DELETE("/api/categories/:categoryId", middleware.WithAuth(), categoryController.Delete)
 
 	fmt.Println("My Application is running")
 	router.Run(":" + os.Getenv("PORT"))

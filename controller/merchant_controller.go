@@ -41,7 +41,7 @@ func (controller MerchantController) FindAll(ctx *gin.Context) {
 func (controller MerchantController) FindByEmail(ctx *gin.Context) {
 	email := ctx.Param("email")
 	merchantResponse := controller.MerchantService.FindByEmail(email)
-	if nil == merchantResponse {
+	if merchantResponse == nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"data": "Mohon maaf, customer tidak ditemukan",
 		})
