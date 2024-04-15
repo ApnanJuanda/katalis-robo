@@ -65,6 +65,8 @@ func GenerateId(maxDigits uint32, typeAccount string) string {
 		return fmt.Sprintf("P%0*d", maxDigits, bi)
 	} else if typeAccount == "group" {
 		return fmt.Sprintf("G%0*d", maxDigits, bi)
+	} else if typeAccount == "address" {
+		return fmt.Sprintf("ADD%0*d", maxDigits, bi)
 	}
 	return ""
 }
@@ -141,4 +143,29 @@ func GroupPopulator(productId string, categoryId string) (*model.Group, error) {
 		ProductId:  productId,
 		CategoryId: categoryId,
 	}, nil
+}
+
+func AddressPopulator(addressCreateRequest *request.AddressCreateUpdateRequest, customerId string) (*model.Address, error) {
+	return &model.Address{
+		ID:         GenerateId(4, "product"),
+		CustomerId: customerId,
+		Detail:     addressCreateRequest.Detail,
+	}, nil
+}
+
+func AddressResponsePopulator(addressModel *model.Address) (*response.AddressResponse, error) {
+	customerResponse, err := CustomerResponsePopulator(&addressModel.Customer)
+	if nil == err {
+		return &response.AddressResponse{
+			Customer: customerResponse,
+			Address:  addressModel.Detail,
+		}, nil
+	} else {
+		return nil, errors.New("Terjadi kesalahan")
+	}
+}
+
+func AddressUpdatePopulator(addressModel *model.Address, addressUpdateRequest *request.AddressCreateUpdateRequest) (*model.Address, error) {
+	addressModel.Detail = addressUpdateRequest.Detail
+	return addressModel, nil
 }
